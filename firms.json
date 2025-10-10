@@ -1,0 +1,72 @@
+{
+  "firms": [
+    {
+      "name": "Muddy Waters Research",
+      "website": "https://www.muddywatersresearch.com",
+      "seed_urls": [
+        "https://www.muddywatersresearch.com/research/",
+        "https://www.muddywatersresearch.com/archives/"
+      ],
+      "description": "Founded by Carson Block, known for exposing fraudulent accounting practices and corporate misconduct"
+    },
+    {
+      "name": "Viceroy Research",
+      "website": "https://viceroyresearch.org",
+      "seed_urls": [
+        "https://viceroyresearch.org/all-reports/"
+      ],
+      "description": "Research firm known for investigative reports on corporate fraud and misconduct"
+    },
+    {
+      "name": "Spruce Point Capital",
+      "website": "https://www.sprucepointcap.com",
+      "seed_urls": [
+        "https://www.sprucepointcap.com/research/",
+        "https://www.sprucepointcap.com/reports/"
+      ],
+      "description": "Investment management firm specializing in forensic research and short-selling"
+    },
+    {
+      "name": "Blue Orca Capital",
+      "website": "https://www.blueorcacapital.com",
+      "seed_urls": [
+        "https://www.blueorcacapital.com/reports/"
+      ],
+      "description": "Activist investment firm focused on deep-dive research and short-selling"
+    },
+    {
+      "name": "Bonitas Research",
+      "website": "https://bonitasresearch.com",
+      "seed_urls": [
+        "https://bonitasresearch.com/research/",
+        "https://bonitasresearch.com/reports/"
+      ],
+      "description": "Short-selling research firm founded by Matthew Wiechert"
+    },
+    {
+      "name": "Grizzly Research",
+      "website": "https://grizzlyreports.com",
+      "seed_urls": [
+        "https://grizzlyreports.com/research/",
+        "https://grizzlyreports.com/reports/"
+      ],
+      "description": "Research firm specializing in uncovering corporate fraud and misrepresentation"
+    },
+    {
+      "name": "Wolfpack Research",
+      "website": "https://wolfpackresearch.com",
+      "seed_urls": [
+        "https://wolfpackresearch.com/research/"
+      ],
+      "description": "Activist research firm focused on exposing corporate fraud and misconduct"
+    },
+    {
+      "name": "White Diamond Research",
+      "website": "https://whitediamondresearch.com",
+      "seed_urls": [
+        "https://whitediamondresearch.com/research/"
+      ],
+      "description": "Research firm specializing in uncovering overvalued companies and corporate misconduct"
+    }
+  ]
+}

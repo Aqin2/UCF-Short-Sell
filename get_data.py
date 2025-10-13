@@ -1,6 +1,7 @@
 # get data for day, week, 3 month, etc
 
 import get_market_data as gmd
+import get_market_data_polygon as gmd_polygon
 from datetime import datetime, timedelta
 import pandas_market_calendars as mcal
 
@@ -122,6 +123,13 @@ o = open(FILE_NAME + ".out", "w")
 
 import re
 
+def get_market_data_robust(a, b, c):
+    result = gmd.get_stock_price(a, b, c)
+    if result:
+        return result
+    else:
+        return gmd_polygon.get_stock_price(a, b, c)
+
 print(f"Exchange,Ticker,Publish_Date,Publish_Date_Open,Publish_Date_Close,"
       +"Next_Day_Open,Next_Day_Close,"
       +"One_Week_Open,One_Week_Close,"
@@ -135,7 +143,7 @@ for line in f.readlines()[1:]:
     print(data)
     
     # Get publish date data
-    result = gmd.get_stock_price(data[1], data[0], data[2])
+    result = get_market_data_robust(data[1], data[0], data[2])
     
     prices = [
         None, # open price, publish date
@@ -158,35 +166,35 @@ for line in f.readlines()[1:]:
         
         # Get next business day data
         next_day = get_next_business_day(data[2], data[0])
-        next_day_result = gmd.get_stock_price(data[1], data[0], next_day)
+        next_day_result = get_market_data_robust(data[1], data[0], next_day)
         if next_day_result:
             prices[2] = next_day_result['open']
             prices[3] = next_day_result['close']
         
         # Get one week data
         one_week = get_future_business_day(data[2], 7, data[0])
-        week_result = gmd.get_stock_price(data[1], data[0], one_week)
+        week_result = get_market_data_robust(data[1], data[0], one_week)
         if week_result:
             prices[4] = week_result['open']
             prices[5] = week_result['close']
         
         # Get one month data
         one_month = get_future_business_day(data[2], 30, data[0])
-        month_result = gmd.get_stock_price(data[1], data[0], one_month)
+        month_result = get_market_data_robust(data[1], data[0], one_month)
         if month_result:
             prices[6] = month_result['open']
             prices[7] = month_result['close']
         
         # Get three month data
         three_month = get_future_business_day(data[2], 90, data[0])
-        three_month_result = gmd.get_stock_price(data[1], data[0], three_month)
+        three_month_result = get_market_data_robust(data[1], data[0], three_month)
         if three_month_result:
             prices[8] = three_month_result['open']
             prices[9] = three_month_result['close']
         
         # Get six month data
         six_month = get_future_business_day(data[2], 180, data[0])
-        six_month_result = gmd.get_stock_price(data[1], data[0], six_month)
+        six_month_result = get_market_data_robust(data[1], data[0], six_month)
         if six_month_result:
             prices[10] = six_month_result['open']
             prices[11] = six_month_result['close']

@@ -1,0 +1,14 @@
+Exchange,Ticker,Publish_Date,Publish_Date_Open,Publish_Date_Close,Next_Day_Open,Next_Day_Close,One_Week_Open,One_Week_Close,One_Month_Open,One_Month_Close,Three_Month_Open,Three_Month_Close,Six_Month_Open,Six_Month_Close
+NASDAQ,SLNO,August,None,None,None,None,None,None,None,None,None,None,None,None
+NASDAQ,TMDX,January,None,None,None,None,None,None,None,None,None,None,None,None
+TOKYO,6920,June,None,None,None,None,None,None,None,None,None,None,None,None
+NASDAQ,HRMY,March,None,None,None,None,None,None,None,None,None,None,None,None
+NASDAQ,TWST,November,None,None,None,None,None,None,None,None,None,None,None,None
+NYSE,IONQ,May,None,None,None,None,None,None,None,None,None,None,None,None
+NYSE,DNA,October,None,None,None,None,None,None,None,None,None,None,None,None
+NASDAQ,BLI,September,None,None,None,None,None,None,None,None,None,None,None,None
+NYSE,QS,April,None,None,None,None,None,None,None,None,None,None,None,None
+NYSE,NVRO,January,None,None,None,None,None,None,None,None,None,None,None,None
+NASDAQ,ALLK,December,None,None,None,None,None,None,None,None,None,None,None,None
+NASDAQ,AXGN,December,None,None,None,None,None,None,None,None,None,None,None,None
+NASDAQ,FANH,August,None,None,None,None,None,None,None,None,None,None,None,None

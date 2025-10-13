@@ -4,8 +4,10 @@ import get_market_data as gmd
 import get_market_data_polygon as gmd_polygon
 from datetime import datetime, timedelta
 import pandas_market_calendars as mcal
+import sys
 
-FILE_NAME = "blue_orca.txt"
+# Get file name from command line argument or default
+FILE_NAME = sys.argv[1] if len(sys.argv) > 1 else "blue_orca.txt"
 
 def get_exchange_calendar(exchange_code):
     """Get the appropriate market calendar for the given exchange"""

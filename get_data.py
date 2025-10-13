@@ -2,34 +2,120 @@
 
 import get_market_data as gmd
 from datetime import datetime, timedelta
+import pandas_market_calendars as mcal
 
 FILE_NAME = "blue_orca.txt"
 
-def get_next_business_day(date_str):
-    """Get the next business day after the given date"""
-    if '/' in date_str:
-        date = datetime.strptime(date_str, '%m/%d/%Y')
-    else:
-        date = datetime.strptime(date_str, '%Y-%m-%d')
-    
-    next_day = date + timedelta(days=1)
-    # If it's Saturday or Sunday, move to Monday
-    while next_day.weekday() >= 5:  # 5 = Saturday, 6 = Sunday
-        next_day += timedelta(days=1)
-    return next_day.strftime('%Y-%m-%d')
+def get_exchange_calendar(exchange_code):
+    """Get the appropriate market calendar for the given exchange"""
+    exchange_map = {
+        # North America
+        'NYSE': 'NYSE',            # New York Stock Exchange
+        'NASDAQ': 'NASDAQ',        # NASDAQ
+        'TSX': 'TSX',             # Toronto Stock Exchange
+        'TSXV': 'TSX',            # TSX Venture Exchange
+        'AMEX': 'NYSE',           # American Stock Exchange (now NYSE American)
+        
+        # Europe
+        'LSE': 'LSE',             # London Stock Exchange
+        'ETR': 'XETRA',           # Deutsche Börse XETRA (Frankfurt)
+        'XTRA': 'XETRA',          # XETRA (alternate code)
+        'FRA': 'FWB',             # Frankfurt Stock Exchange
+        'EPA': 'EURONEXT',        # Euronext Paris
+        'AMS': 'EURONEXT',        # Euronext Amsterdam
+        'BRU': 'EURONEXT',        # Euronext Brussels
+        'SWX': 'SIX',             # Swiss Exchange
+        'STO': 'NASDAQ',          # Stockholm Stock Exchange (Nasdaq Nordic)
+        'CPH': 'NASDAQ',          # Copenhagen Stock Exchange
+        'HEL': 'NASDAQ',          # Helsinki Stock Exchange
+        'OSL': 'OSLO',            # Oslo Stock Exchange
+        'WSE': 'WSE',             # Warsaw Stock Exchange
+        'MIL': 'MTA',             # Borsa Italiana (Milan)
+        'MCE': 'BME',             # Madrid Stock Exchange
+        'ELI': 'EURONEXT',        # Euronext Lisbon
+        
+        # Asia-Pacific
+        'TYO': 'JPX',             # Tokyo Stock Exchange
+        'TSE': 'JPX',             # Tokyo Stock Exchange (alternate)
+        'JPX': 'JPX',             # Japan Exchange Group
+        'HKG': 'HKEX',            # Hong Kong Stock Exchange
+        'HK': 'HKEX',             # Hong Kong (alternate)
+        'HKEX': 'HKEX',           # Hong Kong Exchange (alternate)
+        'SS': 'SSE',              # Shanghai Stock Exchange
+        'SHH': 'SSE',             # Shanghai (alternate)
+        'SZ': 'SZSE',             # Shenzhen Stock Exchange
+        'SHZ': 'SZSE',            # Shenzhen (alternate)
+        'ASX': 'ASX',             # Australian Securities Exchange
+        'ASXL': 'ASX',            # ASX (alternate)
+        'NZE': 'NZX',             # New Zealand Stock Exchange
+        'KRX': 'KRX',             # Korea Exchange
+        'KOS': 'KRX',             # Korea Stock Exchange
+        'BSE': 'BSE',             # Bombay Stock Exchange
+        'NSE': 'NSE',             # National Stock Exchange of India
+        'SGX': 'SGX',             # Singapore Exchange
+        'SET': 'SET',             # Stock Exchange of Thailand
+        'IDX': 'IDX',             # Indonesia Stock Exchange
+        'MYX': 'MYX',             # Bursa Malaysia
+        
+        # Middle East & Africa
+        'JSE': 'JSE',             # Johannesburg Stock Exchange
+        'TASE': 'TASE',           # Tel Aviv Stock Exchange
+        'ADX': 'ADX',             # Abu Dhabi Securities Exchange
+        'DFM': 'DFM',             # Dubai Financial Market
+        'SAU': 'TADAWUL',         # Saudi Stock Exchange (Tadawul)
+        
+        # South America
+        'BVMF': 'BMFBOVESPA',     # B3 (Brazil Stock Exchange)
+        'BMV': 'BMV',             # Mexican Stock Exchange
+        'BCS': 'BCS',             # Santiago Stock Exchange
+        'BCBA': 'BCBA'            # Buenos Aires Stock Exchange
+    }
+    calendar_name = exchange_map.get(exchange_code, 'NYSE')  # Default to NYSE if exchange not found
+    return mcal.get_calendar(calendar_name)
 
-def get_future_business_day(date_str, days):
-    """Get a future business day that's approximately the specified number of calendar days ahead"""
+def parse_date(date_str):
+    """Parse date string to datetime object"""
     if '/' in date_str:
-        date = datetime.strptime(date_str, '%m/%d/%Y')
-    else:
-        date = datetime.strptime(date_str, '%Y-%m-%d')
+        return datetime.strptime(date_str, '%m/%d/%Y')
+    return datetime.strptime(date_str, '%Y-%m-%d')
+
+def get_next_business_day(date_str, exchange_code='NYSE'):
+    """Get the next business day after the given date, accounting for market holidays"""
+    date = parse_date(date_str)
+    calendar = get_exchange_calendar(exchange_code)
     
+    # Get the next trading day
+    schedule = calendar.schedule(start_date=date, end_date=date + timedelta(days=10))
+    trading_days = schedule.index.date
+    
+    # Find the next trading day after our date
+    for trading_day in trading_days:
+        if trading_day > date.date():
+            return trading_day.strftime('%Y-%m-%d')
+    
+    return None
+
+def get_future_business_day(date_str, days, exchange_code='NYSE'):
+    """Get a future business day that's approximately the specified number of calendar days ahead"""
+    date = parse_date(date_str)
+    calendar = get_exchange_calendar(exchange_code)
+    
+    # Get schedule for a wider range to ensure we capture enough trading days
+    schedule = calendar.schedule(
+        start_date=date,
+        end_date=date + timedelta(days=days + 20)  # Add buffer for holidays
+    )
+    trading_days = schedule.index.date
+    
+    # Find the trading day closest to our target date
     target_date = date + timedelta(days=days)
-    # If it's Saturday or Sunday, move to next Monday
-    while target_date.weekday() >= 5:  # 5 = Saturday, 6 = Sunday
-        target_date += timedelta(days=1)
-    return target_date.strftime('%Y-%m-%d')
+    closest_day = min(trading_days, key=lambda x: abs((x - target_date.date()).days))
+    
+    # If the closest day is before our target, try to get the next trading day
+    if closest_day < target_date.date() and len(trading_days) > list(trading_days).index(closest_day) + 1:
+        closest_day = list(trading_days)[list(trading_days).index(closest_day) + 1]
+    
+    return closest_day.strftime('%Y-%m-%d')
 
 f = open(FILE_NAME, "r")
 o = open(FILE_NAME + ".out", "w")
@@ -71,35 +157,35 @@ for line in f.readlines()[1:]:
         prices[1] = result['close']
         
         # Get next business day data
-        next_day = get_next_business_day(data[2])
+        next_day = get_next_business_day(data[2], data[0])
         next_day_result = gmd.get_stock_price(data[1], data[0], next_day)
         if next_day_result:
             prices[2] = next_day_result['open']
             prices[3] = next_day_result['close']
         
         # Get one week data
-        one_week = get_future_business_day(data[2], 7)
+        one_week = get_future_business_day(data[2], 7, data[0])
         week_result = gmd.get_stock_price(data[1], data[0], one_week)
         if week_result:
             prices[4] = week_result['open']
             prices[5] = week_result['close']
         
         # Get one month data
-        one_month = get_future_business_day(data[2], 30)
+        one_month = get_future_business_day(data[2], 30, data[0])
         month_result = gmd.get_stock_price(data[1], data[0], one_month)
         if month_result:
             prices[6] = month_result['open']
             prices[7] = month_result['close']
         
         # Get three month data
-        three_month = get_future_business_day(data[2], 90)
+        three_month = get_future_business_day(data[2], 90, data[0])
         three_month_result = gmd.get_stock_price(data[1], data[0], three_month)
         if three_month_result:
             prices[8] = three_month_result['open']
             prices[9] = three_month_result['close']
         
         # Get six month data
-        six_month = get_future_business_day(data[2], 180)
+        six_month = get_future_business_day(data[2], 180, data[0])
         six_month_result = gmd.get_stock_price(data[1], data[0], six_month)
         if six_month_result:
             prices[10] = six_month_result['open']

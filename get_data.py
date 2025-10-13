@@ -21,8 +21,8 @@ def get_exchange_calendar(exchange_code):
         
         # Europe
         'LSE': 'LSE',             # London Stock Exchange
-        'ETR': 'XETRA',           # Deutsche Börse XETRA (Frankfurt)
-        'XTRA': 'XETRA',          # XETRA (alternate code)
+        'ETR': 'XETR',            # Deutsche Börse XETRA (Frankfurt)
+        'XTRA': 'XETR',           # XETRA (alternate code)
         'FRA': 'FWB',             # Frankfurt Stock Exchange
         'EPA': 'EURONEXT',        # Euronext Paris
         'AMS': 'EURONEXT',        # Euronext Amsterdam
@@ -61,7 +61,7 @@ def get_exchange_calendar(exchange_code):
         'MYX': 'MYX',             # Bursa Malaysia
         
         # Middle East & Africa
-        'JSE': 'JSE',             # Johannesburg Stock Exchange
+        'JSE': 'XJSE',            # Johannesburg Stock Exchange
         'TASE': 'TASE',           # Tel Aviv Stock Exchange
         'ADX': 'ADX',             # Abu Dhabi Securities Exchange
         'DFM': 'DFM',             # Dubai Financial Market

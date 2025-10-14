@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 def get_stock_price(ticker, exchange, date_str):
     """
     Retrieve the opening and closing price for a stock on a specific date.
+    All prices and market cap are converted to USD using approximate exchange rates.
     
     Args:
         ticker (str): Stock ticker symbol (e.g., 'AYA')
@@ -12,85 +13,92 @@ def get_stock_price(ticker, exchange, date_str):
         date_str (str): Date in format 'M/D/YYYY' or 'YYYY-MM-DD'
     
     Returns:
-        dict: Dictionary containing 'open', 'close', 'date', and 'ticker' keys
-              Returns None if data is not available
+        dict: Dictionary containing price data in USD
+        Returns None if data is not available
     
     Example:
         >>> result = get_stock_price('AYA', 'TSX', '9/25/2025')
         >>> print(result)
-        {'ticker': 'AYA.TO', 'date': '2025-09-25', 'open': 10.50, 'close': 10.75}
+        {'ticker': 'AYA.TO', 'date': '2025-09-25', 'open': 8.42, 'close': 8.63, 'currency': 'USD'}
     """
+    # Approximate exchange rates to USD (as of late 2024)
+    currency_to_usd = {
+        'USD': 1.0,
+        'CAD': 0.73,      # Canadian Dollar
+        'GBP': 1.27,      # British Pound
+        'EUR': 1.08,      # Euro
+        'JPY': 0.0067,    # Japanese Yen
+        'CNY': 0.14,      # Chinese Yuan
+        'HKD': 0.13,      # Hong Kong Dollar
+        'AUD': 0.65,      # Australian Dollar
+        'NZD': 0.60,      # New Zealand Dollar
+        'KRW': 0.00075,   # South Korean Won
+        'INR': 0.012,     # Indian Rupee
+        'SGD': 0.75,      # Singapore Dollar
+        'THB': 0.029,     # Thai Baht
+        'IDR': 0.000063,  # Indonesian Rupiah
+        'MYR': 0.22,      # Malaysian Ringgit
+        'CHF': 1.13,      # Swiss Franc
+        'SEK': 0.096,     # Swedish Krona
+        'DKK': 0.14,      # Danish Krone
+        'NOK': 0.092,     # Norwegian Krone
+        'PLN': 0.25,      # Polish Zloty
+        'ZAR': 0.055,     # South African Rand
+        'ILS': 0.27,      # Israeli Shekel
+        'BRL': 0.18,      # Brazilian Real
+        'MXN': 0.050,     # Mexican Peso
+        'CLP': 0.0010,    # Chilean Peso
+        'ARS': 0.0010,    # Argentine Peso
+    }
+    
+    # Exchange to currency mapping
+    exchange_currencies = {
+        'TSX': 'CAD', 'TSXV': 'CAD',
+        'NYSE': 'USD', 'NASDAQ': 'USD', 'AMEX': 'USD', 'OTCMKTS': 'USD', 'OTCQB': 'USD', 'OTCQX': 'USD',
+        'LSE': 'GBP',
+        'ETR': 'EUR', 'XTRA': 'EUR', 'FRA': 'EUR', 'EPA': 'EUR', 'AMS': 'EUR', 'BRU': 'EUR', 'MIL': 'EUR', 'MCE': 'EUR', 'ELI': 'EUR', 'HEL': 'EUR',
+        'SWX': 'CHF',
+        'STO': 'SEK',
+        'CPH': 'DKK',
+        'OSL': 'NOK',
+        'WSE': 'PLN',
+        'TYO': 'JPY', 'TSE': 'JPY', 'JPX': 'JPY',
+        'HKG': 'HKD', 'HK': 'HKD', 'HKEX': 'HKD',
+        'SS': 'CNY', 'SHH': 'CNY',
+        'SZ': 'CNY', 'SHZ': 'CNY',
+        'ASX': 'AUD', 'ASXL': 'AUD',
+        'NZE': 'NZD',
+        'KRX': 'KRW', 'KOS': 'KRW',
+        'BSE': 'INR', 'NSE': 'INR',
+        'SGX': 'SGD',
+        'SET': 'THB',
+        'IDX': 'IDR',
+        'MYX': 'MYR',
+        'JSE': 'ZAR',
+        'TASE': 'ILS',
+        'BVMF': 'BRL',
+        'BMV': 'MXN',
+        'BCS': 'CLP',
+        'BCBA': 'ARS',
+    }
     
     # Exchange suffix mapping for yfinance
     exchange_suffixes = {
-        # North America
-        'TSX': '.TO',           # Toronto Stock Exchange
-        'TSXV': '.V',           # TSX Venture Exchange
-        'NYSE': '',             # New York Stock Exchange
-        'NASDAQ': '',           # NASDAQ
-        'AMEX': '',             # American Stock Exchange
-        'OTCMKTS': '',          # OTC Markets
-        'OTCQB': '',            # OTC QB
-        'OTCQX': '',            # OTC QX
-        
-        # Europe
-        'LSE': '.L',            # London Stock Exchange
-        'ETR': '.DE',           # Deutsche Börse XETRA (Frankfurt)
-        'XTRA': '.DE',          # XETRA (alternate code)
-        'FRA': '.F',            # Frankfurt Stock Exchange
-        'EPA': '.PA',           # Euronext Paris
-        'AMS': '.AS',           # Euronext Amsterdam
-        'BRU': '.BR',           # Euronext Brussels
-        'SWX': '.SW',           # Swiss Exchange (SIX)
-        'STO': '.ST',           # Stockholm Stock Exchange (Nasdaq Nordic)
-        'CPH': '.CO',           # Copenhagen Stock Exchange
-        'HEL': '.HE',           # Helsinki Stock Exchange
-        'OSL': '.OL',           # Oslo Stock Exchange
-        'WSE': '.WA',           # Warsaw Stock Exchange
-        'MIL': '.MI',           # Borsa Italiana (Milan)
-        'MCE': '.MC',           # Madrid Stock Exchange
-        'ELI': '.LS',           # Euronext Lisbon
-        
-        # Asia-Pacific
-        'TYO': '.T',            # Tokyo Stock Exchange
-        'TSE': '.T',            # Tokyo Stock Exchange (alternate)
-        'JPX': '.T',            # Japan Exchange Group
-        'HKG': '.HK',           # Hong Kong Stock Exchange
-        'HK': '.HK',            # Hong Kong (alternate)
-        'HKEX': '.HK',          # Hong Kong Exchange (alternate)
-        'SS': '.SS',            # Shanghai Stock Exchange
-        'SHH': '.SS',           # Shanghai (alternate)
-        'SZ': '.SZ',            # Shenzhen Stock Exchange
-        'SHZ': '.SZ',           # Shenzhen (alternate)
-        'ASX': '.AX',           # Australian Securities Exchange
-        'ASXL': '.AX',          # ASX (alternate)
-        'NZE': '.NZ',           # New Zealand Stock Exchange
-        'KRX': '.KS',           # Korea Exchange (Seoul)
-        'KOS': '.KS',           # Korea Stock Exchange
-        'BSE': '.BO',           # Bombay Stock Exchange
-        'NSE': '.NS',           # National Stock Exchange of India
-        'SGX': '.SI',           # Singapore Exchange
-        'SET': '.BK',           # Stock Exchange of Thailand
-        'IDX': '.JK',           # Indonesia Stock Exchange
-        'MYX': '.KL',           # Bursa Malaysia
-        
-        # Middle East & Africa
-        'JSE': '.JO',           # Johannesburg Stock Exchange
-        'TASE': '.TA',          # Tel Aviv Stock Exchange
-        'ADX': '.AD',           # Abu Dhabi Securities Exchange
-        'DFM': '.DU',           # Dubai Financial Market
-        'SAU': '.SAU',          # Saudi Stock Exchange (Tadawul)
-        
-        # South America
-        'BVMF': '.SA',          # B3 (Brazil Stock Exchange)
-        'BMV': '.MX',           # Mexican Stock Exchange
-        'BCS': '.SN',           # Santiago Stock Exchange
-        'BCBA': '.BA',          # Buenos Aires Stock Exchange
+        'TSX': '.TO', 'TSXV': '.V', 'NYSE': '', 'NASDAQ': '', 'AMEX': '', 'OTCMKTS': '', 'OTCQB': '', 'OTCQX': '',
+        'LSE': '.L', 'ETR': '.DE', 'XTRA': '.DE', 'FRA': '.F', 'EPA': '.PA', 'AMS': '.AS', 'BRU': '.BR',
+        'SWX': '.SW', 'STO': '.ST', 'CPH': '.CO', 'HEL': '.HE', 'OSL': '.OL', 'WSE': '.WA', 'MIL': '.MI',
+        'MCE': '.MC', 'ELI': '.LS', 'TYO': '.T', 'TSE': '.T', 'JPX': '.T', 'HKG': '.HK', 'HK': '.HK',
+        'HKEX': '.HK', 'SS': '.SS', 'SHH': '.SS', 'SZ': '.SZ', 'SHZ': '.SZ', 'ASX': '.AX', 'ASXL': '.AX',
+        'NZE': '.NZ', 'KRX': '.KS', 'KOS': '.KS', 'BSE': '.BO', 'NSE': '.NS', 'SGX': '.SI', 'SET': '.BK',
+        'IDX': '.JK', 'MYX': '.KL', 'JSE': '.JO', 'TASE': '.TA', 'BVMF': '.SA', 'BMV': '.MX', 'BCS': '.SN',
+        'BCBA': '.BA',
     }
     
-    # Get the appropriate suffix
+    # Get the appropriate suffix and currency
     suffix = exchange_suffixes.get(exchange.upper(), '')
     full_ticker = f"{ticker}{suffix}"
+    native_currency = exchange_currencies.get(exchange.upper(), 'USD')
+    exchange_rate = currency_to_usd.get(native_currency, 1.0)
     
     # Parse the date
     try:
@@ -130,14 +138,33 @@ def get_stock_price(ticker, exchange, date_str):
         
         row = matching_rows.iloc[0]
         
+        # Calculate historical market cap
+        # Market Cap = Share Price × Shares Outstanding
+        market_cap = None
+        try:
+            info = stock.get_info()
+            shares_outstanding = info.get('sharesOutstanding', None)
+            
+            if shares_outstanding:
+                # Use closing price for market cap calculation
+                closing_price = float(row['Close'])
+                market_cap_native = closing_price * shares_outstanding
+                market_cap = round(market_cap_native * exchange_rate, 2)
+        except Exception as e:
+            print(f"Note: Could not calculate market cap - {str(e)}")
+        
         result = {
             'ticker': full_ticker,
             'date': target_date_str,
-            'open': round(float(row['Open']), 2),
-            'close': round(float(row['Close']), 2),
-            'high': round(float(row['High']), 2),
-            'low': round(float(row['Low']), 2),
-            'volume': int(row['Volume'])
+            'open': round(float(row['Open']) * exchange_rate, 2),
+            'close': round(float(row['Close']) * exchange_rate, 2),
+            'high': round(float(row['High']) * exchange_rate, 2),
+            'low': round(float(row['Low']) * exchange_rate, 2),
+            'volume': int(row['Volume']),
+            'market_cap': market_cap,
+            'currency': 'USD',
+            'native_currency': native_currency,
+            'exchange_rate': round(exchange_rate, 4) if native_currency != 'USD' else None
         }
         
         return result
@@ -149,23 +176,33 @@ def get_stock_price(ticker, exchange, date_str):
 
 # Example usage
 if __name__ == "__main__":
-    # Example 1: TSX stock
-    result = get_stock_price('AYA', 'TSX', '9/25/2025')
+    # Example 1: TSX stock (Canadian exchange, converts CAD to USD)
+    result = get_stock_price('SHOP', 'TSX', '9/25/2024')
     if result:
-        print(f"\n{result['ticker']} on {result['date']}:")
+        print(f"\n{result['ticker']} on {result['date']} (in {result['currency']}):")
         print(f"  Open:  ${result['open']}")
         print(f"  Close: ${result['close']}")
+        if result['exchange_rate']:
+            print(f"  Exchange Rate: 1 {result['native_currency']} = {result['exchange_rate']} USD (approx)")
+        if result['market_cap']:
+            print(f"  Market Cap: ${result['market_cap']:,.2f}")
     
-    # Example 2: NYSE stock
+    # Example 2: NYSE stock (already in USD)
     result2 = get_stock_price('AAPL', 'NYSE', '9/28/2022')
     if result2:
-        print(f"\n{result2['ticker']} on {result2['date']}:")
+        print(f"\n{result2['ticker']} on {result2['date']} (in {result2['currency']}):")
         print(f"  Open:  ${result2['open']}")
         print(f"  Close: ${result2['close']}")
-
-    # Example 3: ETR stock
-    result3 = get_stock_price('ETR', 'ADJ', '10/6/2021')
+        if result2['market_cap']:
+            print(f"  Market Cap: ${result2['market_cap']:,.2f}")
+    
+    # Example 3: London Stock Exchange (converts GBP to USD)
+    result3 = get_stock_price('BP', 'LSE', '10/6/2021')
     if result3:
-        print(f"\n{result3['ticker']} on {result3['date']}:")
-        print(f"  Open:  ${result2['open']}")
-        print(f"  Close: ${result2['close']}")
+        print(f"\n{result3['ticker']} on {result3['date']} (in {result3['currency']}):")
+        print(f"  Open:  ${result3['open']}")
+        print(f"  Close: ${result3['close']}")
+        if result3['exchange_rate']:
+            print(f"  Exchange Rate: 1 {result3['native_currency']} = {result3['exchange_rate']} USD (approx)")
+        if result3['market_cap']:
+            print(f"  Market Cap: ${result3['market_cap']:,.2f}")

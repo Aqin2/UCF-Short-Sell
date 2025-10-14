@@ -132,7 +132,7 @@ def get_market_data_robust(a, b, c):
     else:
         return gmd_polygon.get_stock_price(a, b, c)
 
-print(f"Exchange,Ticker,Publish_Date,Publish_Date_Open,Publish_Date_Close,"
+print(f"Exchange,Ticker,Publish_Date,Market_Cap,Publish_Date_Open,Publish_Date_Close,"
       +"Next_Day_Open,Next_Day_Close,"
       +"One_Week_Open,One_Week_Close,"
       +"One_Month_Open,One_Month_Close,"
@@ -148,6 +148,7 @@ for line in f.readlines()[1:]:
     result = get_market_data_robust(data[1], data[0], data[2])
     
     prices = [
+        None, # market cap
         None, # open price, publish date
         None, # close price, publish date
         None, # next day open
@@ -163,43 +164,44 @@ for line in f.readlines()[1:]:
     ]
 
     if result:
-        prices[0] = result['open']
-        prices[1] = result['close']
+        prices[0] = result.get('market_cap', None)
+        prices[1] = result['open']
+        prices[2] = result['close']
         
         # Get next business day data
         next_day = get_next_business_day(data[2], data[0])
         next_day_result = get_market_data_robust(data[1], data[0], next_day)
         if next_day_result:
-            prices[2] = next_day_result['open']
-            prices[3] = next_day_result['close']
+            prices[3] = next_day_result['open']
+            prices[4] = next_day_result['close']
         
         # Get one week data
         one_week = get_future_business_day(data[2], 7, data[0])
         week_result = get_market_data_robust(data[1], data[0], one_week)
         if week_result:
-            prices[4] = week_result['open']
-            prices[5] = week_result['close']
+            prices[5] = week_result['open']
+            prices[6] = week_result['close']
         
         # Get one month data
         one_month = get_future_business_day(data[2], 30, data[0])
         month_result = get_market_data_robust(data[1], data[0], one_month)
         if month_result:
-            prices[6] = month_result['open']
-            prices[7] = month_result['close']
+            prices[7] = month_result['open']
+            prices[8] = month_result['close']
         
         # Get three month data
         three_month = get_future_business_day(data[2], 90, data[0])
         three_month_result = get_market_data_robust(data[1], data[0], three_month)
         if three_month_result:
-            prices[8] = three_month_result['open']
-            prices[9] = three_month_result['close']
+            prices[9] = three_month_result['open']
+            prices[10] = three_month_result['close']
         
         # Get six month data
         six_month = get_future_business_day(data[2], 180, data[0])
         six_month_result = get_market_data_robust(data[1], data[0], six_month)
         if six_month_result:
-            prices[10] = six_month_result['open']
-            prices[11] = six_month_result['close']
+            prices[11] = six_month_result['open']
+            prices[12] = six_month_result['close']
 
     # Print all prices as comma-separated values
     print(f"{data[0]},{data[1]},{data[2]},{','.join(str(p) for p in prices)}", file=o)

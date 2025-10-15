@@ -2,7 +2,7 @@
 from polygon import RESTClient
 from datetime import datetime, timedelta
 
-def get_stock_price(ticker, exchange, date_str, api_key="tn4NSpJrJycbY85Tn2rUcuEo_JER8jqR"):
+def get_stock_price(ticker, exchange, date_str, api_key=""):
     """
     Retrieve the open/close price for a stock on a specific date from Polygon.io.
     All prices and market cap are converted to USD using approximate exchange rates.
@@ -140,7 +140,7 @@ def get_stock_price(ticker, exchange, date_str, api_key="tn4NSpJrJycbY85Tn2rUcuE
 # Example usage
 if __name__ == "__main__":
     # UCF Polygon API key
-    POLYGON_API_KEY = "tn4NSpJrJycbY85Tn2rUcuEo_JER8jqR"
+    POLYGON_API_KEY = ""
 
     # Example 1: Delisted stock (Enviva, NYSE:EVA)
     result = get_stock_price('EVA', 'NYSE', '2023-10-02', POLYGON_API_KEY)
